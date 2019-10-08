@@ -10,7 +10,6 @@ crawl.put('/', async (req, res) => {
     const { baseUrl } = req.body;
 
     try {
-        console.info(baseUrl);
         const response = await axios.get(baseUrl);
         res.status(200).send(response.data);
     } catch (error) {
