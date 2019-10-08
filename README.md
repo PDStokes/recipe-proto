@@ -2,7 +2,7 @@
 
 > Nuxt app that scrapes an inputted recipe website for pertinent information
 
-The goal of this prototype is to create an app which scrapes recipe data from a website, negating the obnoxious ammount of extraneos information and ads that users must usually scroll through, and displays this recipe information in a succinct manner.
+The goal of this prototype is to create an app which scrapes recipe data from a website, negating the obnoxious amount of extraneous information and ads that users must usually scroll through, and displays this recipe information in a succinct manner.
 
 A additional goal is to utilize local storage to allow the user to store these scraped recipes for a specified amount of time on whatever device they use to access the app.
 
