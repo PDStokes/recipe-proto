@@ -1,4 +1,6 @@
-# Recipe Scraping Prototype
+# Recipeel
+
+## Recipe Scraping Prototype
 
 > Nuxt app that scrapes an inputted recipe website for pertinent information
 

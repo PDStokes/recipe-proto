@@ -7,7 +7,9 @@
         </ul>
         <h3>Directions</h3>
         <div class="direction-wrapper">
-            <p v-for="direction in content.directions" :key="direction" class="direction">{{ direction }}</p>
+            <ol class="directions">
+                <li v-for="direction in content.directions" :key="direction" class="direction"><span>{{ direction }}</span></li>
+            </ol>
         </div>
     </div>
 </template>
@@ -25,8 +27,28 @@ export default {
 
 <style lang="scss" scoped>
 .recipe-wrapper {
-    width: fit-content;
+    width: 80%;
     margin: 0 auto;
     max-width: 1000px;
+    padding-top: 60px;
+    padding-bottom: 80px;
+}
+
+.ingredients {
+    li {
+        margin-bottom: 0.5rem;
+    }
+}
+
+.directions {
+    font-weight: bold;
+
+    li {
+        margin-bottom: 1.5rem;
+
+        span {
+            font-weight: normal;
+        }
+    }
 }
 </style>

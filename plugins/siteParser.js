@@ -13,12 +13,12 @@ const mainFunc = (data) => {
         const recipeContainer = getContainer(cheerioObj);
         const recipe = {
             title: getTitle(cheerioObj, recipeContainer),
-            // ingredients: getIngredients(recipeContainer),
-            // directions: getDirections(recipeContainer),
+            ingredients: getIngredients(cheerioObj, recipeContainer),
+            directions: getDirections(cheerioObj, recipeContainer),
         };
         return recipe;
     } catch (error) {
-        console.error('Parse Failed');
+        console.error('Main Func Failed');
         console.error(error);
     }
 };
@@ -57,6 +57,50 @@ const getTitle = (O, containerElem) => {
     });
 
     return O(title).text();
+};
+
+/** -----------------------------------
+ * @desc Func to return ingredients list
+ * @param Object O - Cheerio obj with loaded data
+ * @param Object containerElem - Cheerio obj of container
+ * @return Array - array of strings with ingredients data
+ */
+const getIngredients = (O, containerElem) => {
+
+    const ingredientsClassSheet = ['ingredient'];
+
+    const ingredients = domScrapeSort(O, ingredientsClassSheet, {
+        searchElemType: 'ul',
+        containerElem,
+        conditionName: 'list',
+        listCheck: true,
+    });
+
+    const ingredientArr = parseLists(O, ingredients);
+
+    return ingredientArr;
+};
+
+/** -----------------------------------
+ * @desc Func to return directions list
+ * @param Object O - Cheerio obj with loaded data
+ * @param Object containerElem - Cheerio obj of container
+ * @return Array - array of strings with directions data
+ */
+const getDirections = (O, containerElem) => {
+
+    const directionsClassSheet = ['direction', 'instruction'];
+
+    const directions = domScrapeSort(O, directionsClassSheet, {
+        searchElemType: 'ul',
+        containerElem,
+        conditionName: 'list',
+        listCheck: true,
+    });
+
+    const ingredientArr = parseLists(O, directions);
+
+    return ingredientArr;
 };
 
 /** -----------------------------------
@@ -139,6 +183,8 @@ const conditionCheck = (O, elem, conditionName) => {
             return O(elem).is('[class*="container"]');
         case 'title':
             return O(elem).children().length <= 2;
+        case 'list':
+            return O(elem).children().length >= 2;
         default:
             throw new Error('Incorrect condition check name');
     }
@@ -191,6 +237,21 @@ const leastFirstSort = (a, b) => {
         return -1;
     }
     return 0;
+};
+
+// Return array of strings from passed list elem
+const parseLists = (O, listElem) => {
+    const listArr = [];
+
+    O(listElem).find('li').each(function(i, elem) {
+        listArr.push( O(elem).text() );
+    });
+
+    if (listArr.length) {
+        return listArr;
+    } else {
+        throw new Error('Unable to parse list object');
+    }
 };
 
 // -----------------------------------

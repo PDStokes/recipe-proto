@@ -1,19 +1,21 @@
 <template>
     <div class="container">
         <div class="header">
+            <h1 class="title">Reci<span>peel</span></h1>
             <form ref="searchForm" @submit.prevent="crawlSite">
                 <input
                     v-model="searchParam"
-                    :disabled="disable"
+                    :disabled="loading"
                     type="text"
                     name="text"
                     class="inputField"
                     placeholder="Input URL"
+                    @focus="warning = false"
                 >
             </form>
-            <p v-if="warning" class="warning" @focus="warning = false">{{ warning }}</p>
+            <p v-if="warning" class="warning">{{ warning }}</p>
         </div>
-        <div class="content">
+        <div v-if="bodyContent" class="content">
             <parsed-html :content="bodyContent" />
         </div>
     </div>
@@ -30,7 +32,7 @@ export default {
         return {
             searchParam: '',
             warning: false,
-            disable: false,
+            loading: false,
             bodyContent: null,
         };
     },
@@ -46,7 +48,7 @@ export default {
         },
         async crawlSite() {
             if (this.urlCheck(this.searchParam)) {
-                this.disable = true;
+                this.loading = true;
                 const baseUrl = this.searchParam.toString().includes('http') ? this.searchParam : 'http://' + this.searchParam;
 
                 try {
@@ -60,13 +62,13 @@ export default {
                     this.warning = 'URL Failed: Please try again, or contact ya BOI.';
                 }
             }
-            this.disable = false;
+            this.loading = false;
         },
     },
 };
 </script>
 
-<style>
+<style lang="scss" scoped>
 .container {
   margin: 0 auto;
   min-height: 100vh;
@@ -79,8 +81,17 @@ export default {
 
 .header {
     width: 100%;
-    padding-top: 150px;
-    padding-bottom: 50px;
+    padding-top: 60px;
+    padding-bottom: 100px;
+}
+
+.title {
+    font-size: 3rem;
+    color:yellowgreen;
+
+    span {
+        color:goldenrod;
+    }
 }
 
 .inputField {
@@ -97,11 +108,16 @@ export default {
     color: red;
 }
 
+.loading {
+    padding-top: 20px;
+}
+
 .content {
     margin-top: 40px;
     text-align: left;
     width: 100%;
-    background-color: lightgray;
+    background-color: rgb(240, 240, 240);
+    border-top: 1px solid rgb(220, 220, 220);
 }
 
 </style>
