@@ -18,8 +18,8 @@ const mainFunc = (data) => {
         };
         return recipe;
     } catch (error) {
-        console.error('Main Func Failed');
         console.error(error);
+        throw new Error('Main Func Failed');
     }
 };
 
@@ -121,21 +121,25 @@ const domScrapeSort = (O, classList, options) => {
     };
     options = Object.assign(defaults, options);
 
+    // Check if element exists in loaded data or container obj
     classList.filter( elem => elementExists(O, elem, options.containerElem));
 
     if (classList) {
         const bestMatchedElems = [];
 
+        // For each class name supplied in classList
         classList.forEach((className) => {
             let elemList;
             const verifiedElems = [];
 
+            // Create array of elems that match class name
             if (options.containerElem) {
                 elemList = O(options.containerElem).find(`${options.searchElemType}[class*="${className}"]`).toArray();
             } else {
                 elemList = O(`${options.searchElemType}[class*="${className}"]`).toArray();
             }
 
+            // For each matched elem, perform condition check based on passed condition type (conditionName), if passes then push to verified
             O(elemList).each(function(i, elem) {
                 const conditionPassed = conditionCheck(O, elem, options.conditionName);
                 if (conditionPassed) {
@@ -143,15 +147,25 @@ const domScrapeSort = (O, classList, options) => {
                 }
             });
 
+            // Sort all verified elems based on passed sort type (listCheck), and push best elem from top
             if (verifiedElems) {
                 const sortedElems = elemSort(O, verifiedElems, options.listCheck);
-                bestMatchedElems.push(sortedElems[0]);
+                const topElemClass = O(sortedElems[0]).attr('class');
+
+                // If multiple elements with same class name exist, push them all, otherwise push first/best
+                if ( O(`.${topElemClass}`).length > 1 ) {
+                    bestMatchedElems.push( O(`.${topElemClass}`) );
+                } else {
+                    bestMatchedElems.push(sortedElems[0]);
+                }
+
             } else {
                 console.error(`No verified elems found for ${className}`);
             }
 
         });
 
+        // Sort of final best elems from each class name
         const finalElem = elemSort(O, bestMatchedElems, options.listCheck)[0];
         return finalElem;
 
@@ -242,9 +256,20 @@ const leastFirstSort = (a, b) => {
 // Return array of strings from passed list elem
 const parseLists = (O, listElem) => {
     const listArr = [];
+    const multiPart = O(listElem).length;
 
-    O(listElem).find('li').each(function(i, elem) {
-        listArr.push( O(elem).text() );
+    O(listElem).each(function(i, elem) {
+        const elemType = O(elem).prev().length ? O(elem).prev().prop('nodeName').toLowerCase() : null;
+        const headerTypes = ['h1', 'h2', 'h3', 'h4', 'h5'];
+
+        if ( multiPart && headerTypes.includes(elemType) ) {
+            listArr.push( { header: true, text: O(elem).prev().text() } );
+        }
+
+        O(elem).find('li').each(function(i, elem) {
+            listArr.push( { header: false, text: O(elem).text() });
+        });
+
     });
 
     if (listArr.length) {

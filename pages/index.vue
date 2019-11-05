@@ -14,6 +14,7 @@
                 >
             </form>
             <p v-if="warning" class="warning">{{ warning }}</p>
+            <saved-list v-if="savedData.length" :content="savedData" />
         </div>
         <div v-if="bodyContent" class="content">
             <parsed-html :content="bodyContent" />
@@ -23,18 +24,27 @@
 
 <script>
 import parsedHtml from '~/components/parsed-html';
+import savedList from '~/components/saved-list';
 
 export default {
     components: {
         parsedHtml,
+        savedList,
     },
     data() {
         return {
             searchParam: '',
             warning: false,
             loading: false,
-            bodyContent: null,
         };
+    },
+    computed: {
+        savedData() {
+            return this.$store.state.savedRecipes;
+        },
+        bodyContent() {
+            return this.$store.state.currentRecipe;
+        },
     },
     methods: {
         urlCheck(url) {
@@ -54,7 +64,8 @@ export default {
                 try {
                     const response = await this.$axios.$put('/recipe', { baseUrl });
                     if (response) {
-                        this.bodyContent = this.$parseHtml(response);
+                        const recipeContent = this.$parseHtml(response);
+                        this.$store.commit('setCurrentRecipe', recipeContent);
                     }
 
                 } catch (error) {
@@ -116,8 +127,9 @@ export default {
     margin-top: 40px;
     text-align: left;
     width: 100%;
-    background-color: rgb(240, 240, 240);
-    border-top: 1px solid rgb(220, 220, 220);
+    background-color: var(--gray-bg);
+    border-top: 1px solid var(--gray-border);
+    position: relative;
 }
 
 </style>

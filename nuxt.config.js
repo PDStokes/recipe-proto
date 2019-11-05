@@ -14,6 +14,9 @@ export default {
         link: [
             { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
         ],
+        script: [
+            { src: 'https://kit.fontawesome.com/b57b99e256.js', crossorigin: 'anonymous' },
+        ],
     },
     /*
   ** Customize the progress-bar color
@@ -25,6 +28,9 @@ export default {
     css: [
         '~/assets/scss/app.scss',
     ],
+    styleResources: {
+        scss: '~/assets/scss/base/*.scss',
+    },
     /*
   ** Plugins to load before mounting the App
   */
@@ -38,6 +44,7 @@ export default {
     // Doc: https://axios.nuxtjs.org/usage
         '@nuxtjs/axios',
         '@nuxtjs/eslint-module',
+        '@nuxtjs/style-resources',
     ],
     serverMiddleware: [
         '~/api/crawlResponse',

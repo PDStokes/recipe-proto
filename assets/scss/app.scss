@@ -1,5 +1,21 @@
+:root {
+    --gray-bg: rgb(240, 240, 240);
+    --gray-border: rgb(220, 220, 220);
+}
 html, body {
     font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
     margin: 0;
     font-size: 18px;
+    color: black;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --gray-bg: rgb(68, 68, 68);
+        --gray-border: rgb(51, 51, 51);
+    }
+    html, body{
+        background: rgb(80, 80, 80);
+        color: white;
+    }
 }
