@@ -46,6 +46,11 @@ export default {
             return this.$store.state.currentRecipe;
         },
     },
+    created() {
+        if (process.client) {
+            this.$store.dispatch('forageSavedRecipes');
+        }
+    },
     methods: {
         urlCheck(url) {
             if (url === null || url === '') {
