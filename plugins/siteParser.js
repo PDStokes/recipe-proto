@@ -33,7 +33,7 @@ const getContainer = (O) => {
     const containerClassSheet = ['recipe'];
 
     const container = domScrapeSort(O, containerClassSheet, {
-        searchElemType: 'div',
+        searchElemType: ['div'],
         conditionName: 'container',
         listCheck: true,
     });
@@ -70,7 +70,7 @@ const getIngredients = (O, containerElem) => {
     const ingredientsClassSheet = ['ingredient'];
 
     const ingredients = domScrapeSort(O, ingredientsClassSheet, {
-        searchElemType: 'ul',
+        searchElemType: ['ul'],
         containerElem,
         conditionName: 'list',
         listCheck: true,
@@ -92,7 +92,7 @@ const getDirections = (O, containerElem) => {
     const directionsClassSheet = ['direction', 'instruction'];
 
     const directions = domScrapeSort(O, directionsClassSheet, {
-        searchElemType: 'ul',
+        searchElemType: ['ul', 'ol'],
         containerElem,
         conditionName: 'list',
         listCheck: true,
@@ -114,10 +114,11 @@ const domScrapeSort = (O, classList, options) => {
 
     //Merge passed options and defaults
     const defaults = {
-        searchElemType: '',
+        searchElemType: [''],
         containerElem: false,
         conditionName: isRequired,
         listCheck: false,
+        debug: false,
     };
     options = Object.assign(defaults, options);
 
@@ -129,15 +130,23 @@ const domScrapeSort = (O, classList, options) => {
 
         // For each class name supplied in classList
         classList.forEach((className) => {
-            let elemList;
+            let elemList = [];
             const verifiedElems = [];
 
             // Create array of elems that match class name
             if (options.containerElem) {
-                elemList = O(options.containerElem).find(`${options.searchElemType}[class*="${className}"]`).toArray();
+                options.searchElemType.forEach((elemType) => {
+                    elemList.push( O(options.containerElem).find(`${elemType}[class*="${className}"]`).toArray() );
+                });
+                elemList = elemList.flat();
             } else {
-                elemList = O(`${options.searchElemType}[class*="${className}"]`).toArray();
+                options.searchElemType.forEach((elemType) => {
+                    elemList.push( O(`${elemType}[class*="${className}"]`).toArray() );
+                });
+                elemList = elemList.flat();
             }
+
+            if(options.debug) consoleGroup(className, 'Elemlist', elemList);
 
             // For each matched elem, perform condition check based on passed condition type (conditionName), if passes then push to verified
             O(elemList).each(function(i, elem) {
@@ -146,6 +155,8 @@ const domScrapeSort = (O, classList, options) => {
                     verifiedElems.push(elem);
                 }
             });
+
+            if(options.debug) consoleGroup(className, 'Verified Elems', verifiedElems);
 
             // Sort all verified elems based on passed sort type (listCheck), and push best elem from top
             if (verifiedElems) {
@@ -164,6 +175,8 @@ const domScrapeSort = (O, classList, options) => {
             }
 
         });
+
+        if(options.debug) consoleGroup('END', 'Best Matched Elems:', bestMatchedElems);
 
         // Sort of final best elems from each class name
         const finalElem = elemSort(O, bestMatchedElems, options.listCheck)[0];
@@ -196,9 +209,9 @@ const conditionCheck = (O, elem, conditionName) => {
         case 'container':
             return O(elem).is('[class*="container"]');
         case 'title':
-            return O(elem).children().length <= 2;
+            return O(elem).children().length <= 2 && O(elem).prop('nodeName').toLowerCase().startsWith('h');
         case 'list':
-            return O(elem).children().length >= 2;
+            return O(elem).children().length >= 1;
         default:
             throw new Error('Incorrect condition check name');
     }
@@ -279,6 +292,14 @@ const parseLists = (O, listElem) => {
     }
 };
 
-// -----------------------------------
+// ----------- Debug Funcs ----------------
+
+const consoleGroup = (className, name, data) => {
+    console.group();
+    console.info(`--${className}-- \n`);
+    console.info(`${name}: \n`);
+    console.info(data);
+    console.groupEnd();
+};
 
 Vue.prototype.$parseHtml = mainFunc;
