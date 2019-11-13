@@ -302,4 +302,6 @@ const consoleGroup = (className, name, data) => {
     console.groupEnd();
 };
 
+// ---------------------------------------
+
 Vue.prototype.$parseHtml = mainFunc;

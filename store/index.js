@@ -1,4 +1,5 @@
 import localforage from 'localforage';
+import Vue from 'vue';
 
 localforage.config({
     driver: [localforage.INDEXEDDB,
@@ -22,6 +23,19 @@ export const mutations = {
     removeRecipe (state, recipe) {
         const index = state.savedRecipes.indexOf(recipe);
         state.savedRecipes.splice(index, 1);
+
+        localforage.getItem('savedRecipes').then(function(recipes) {
+            const isRecipeSaved = recipes.find((elem) => { return elem.title === recipe.title; });
+            if (isRecipeSaved) {
+                localforage.setItem('savedRecipes', state.savedRecipes).catch(function(err) {
+                    console.error("localforage setItem() failed");
+                    console.error(err);
+                });
+            }
+        }).catch(function(err) {
+            console.error("localforage getItem() failed");
+            console.log(err);
+        });
     },
     focusRecipe (state, recipe) {
         if (state.savedRecipes.includes(recipe) && recipe !== state.currentRecipe){
@@ -32,18 +46,26 @@ export const mutations = {
         state.currentRecipe = recipe;
     },
     setRecipes (state, recipes) {
+        recipes.forEach((recipe) => {
+            recipe.saved = true;
+        });
         state.savedRecipes = recipes;
     },
     removeAllRecipes (state) {
         state.savedRecipes = [];
     },
+    addSavedIcons (state) {
+        state.savedRecipes.forEach((recipe) => {
+            Vue.set(recipe, 'saved', true);
+        });
+    },
 };
 
 export const actions = {
-    saveCurrentRecipes ({ state }) {
-        console.log("Saving:");
-        console.table(state.savedRecipes);
-        localforage.setItem('savedRecipes', state.savedRecipes).catch(function(err) {
+    saveCurrentRecipes ({ state, commit }) {
+        commit('addSavedIcons');
+        localforage.setItem('savedRecipes', state.savedRecipes).then(function(val) {
+        }).catch(function(err) {
             console.error("localforage setItem() failed");
             console.error(err);
         });

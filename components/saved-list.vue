@@ -2,6 +2,7 @@
     <div>
         <div class="saved-nav-wrapper">
             <div v-for="item in content" :key="item.title" class="save-item" @click="focusRecipe(item)">
+                <span v-if="item.saved" class="saved-icon"><i class="fas fa-check" /></span>
                 <span class="close-icon" @click="removeRecipe(item)"><i class="fas fa-times-circle" /></span>
                 <p>{{ item.title }}</p>
             </div>
@@ -73,12 +74,21 @@ export default {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    right: 5px;
+    right: 10px;
     font-size: 1.5rem;
 
     &:hover {
         color: darken(red, 15%);
     }
+}
+
+.saved-icon{
+    color: yellowgreen;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 10px;
+    font-size: 1.25rem;
 }
 
 .button-wrapper {

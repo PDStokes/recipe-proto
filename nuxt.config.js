@@ -13,6 +13,8 @@ export default {
         ],
         link: [
             { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+            { rel: 'icon', type: 'image/png', href: '/favicon-32x32.png' },
+            { rel: 'icon', type: 'image/png', href: '/favicon-16x16.png' },
         ],
         script: [
             { src: 'https://kit.fontawesome.com/b57b99e256.js', crossorigin: 'anonymous' },
