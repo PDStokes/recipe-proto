@@ -1,12 +1,15 @@
 import localforage from 'localforage';
 import Vue from 'vue';
 
-localforage.config({
-    driver: [localforage.INDEXEDDB,
-        localforage.WEBSQL,
-        localforage.LOCALSTORAGE],
-    name: 'Recipeel-DB',
-});
+if (process.client) {
+    localforage.config({
+        driver: [localforage.INDEXEDDB,
+            localforage.WEBSQL,
+            localforage.LOCALSTORAGE],
+        name: 'Recipeel-DB',
+    });
+}
+
 
 export const state = () => ({
     savedRecipes: [],
