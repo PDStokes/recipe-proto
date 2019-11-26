@@ -51,4 +51,7 @@ export default {
     serverMiddleware: [
         '~/api/crawlResponse',
     ],
+    env: {
+        baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+    },
 };
