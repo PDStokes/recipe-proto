@@ -11,7 +11,8 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "pushMaster": "git push origin HEAD:master"
+    "pushMaster": "git push origin HEAD:master",
+    "heroku-postbuild": "npm run build"
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.3.6",
