@@ -67,7 +67,6 @@ export default {
                 const queryUrl = this.searchParam.toString().includes('http') ? this.searchParam : 'http://' + this.searchParam;
 
                 try {
-                    console.log(this.$axios.defaults.baseURL);
                     const response = await this.$axios.$put('/recipe', { queryUrl });
                     if (response) {
                         const recipeContent = this.$parseHtml(response);
