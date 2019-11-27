@@ -51,7 +51,7 @@ export default {
     serverMiddleware: [
         '~/api/crawlResponse',
     ],
-    env: {
-        baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+    axios: {
+        baseURL: process.env.DOTENV === 'production' ? 'https://recipe-proto.herokuapp.com/' : 'http://localhost:3000',
     },
 };

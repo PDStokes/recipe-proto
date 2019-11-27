@@ -7,10 +7,10 @@ crawl.use(bodyParser.json());
 
 crawl.put('/', async (req, res) => {
 
-    const { baseUrl } = req.body;
+    const { queryUrl } = req.body;
 
     try {
-        const response = await axios.get(baseUrl);
+        const response = await axios.get(queryUrl);
         res.status(200).send(response.data);
     } catch (error) {
         console.error(error);
