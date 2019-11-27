@@ -52,6 +52,6 @@ export default {
         '~/api/crawlResponse',
     ],
     axios: {
-        baseURL: process.env.NODE_ENV === 'production'? 'https://recipe-proto.herokuapp.com/' : 'http://localhost:3000',
+        baseURL: process.env.NODE_ENV === 'production'? process.env.API_URL_BROWSER : 'http://localhost:3000',
     },
 };
