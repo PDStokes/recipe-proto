@@ -1,6 +1,6 @@
 {
   "name": "recipe-proto",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "description": "My cool Nuxt.js project",
   "author": "Paul Stokes",
   "private": true,
