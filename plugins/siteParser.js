@@ -18,8 +18,7 @@ const mainFunc = (data) => {
         };
         return recipe;
     } catch (error) {
-        console.error(error);
-        throw new Error('Main Func Failed');
+        throw error;
     }
 };
 
@@ -52,6 +51,7 @@ const getTitle = (O, containerElem) => {
     const titleClassSheet = ['title','name'];
 
     const title = domScrapeSort(O, titleClassSheet, {
+        searchElemType: ['h1', 'h2', 'h3'],
         containerElem,
         conditionName: 'title',
     });
@@ -98,9 +98,9 @@ const getDirections = (O, containerElem) => {
         listCheck: true,
     });
 
-    const ingredientArr = parseLists(O, directions);
+    const directionArr = parseLists(O, directions);
 
-    return ingredientArr;
+    return directionArr;
 };
 
 /** -----------------------------------
@@ -133,18 +133,11 @@ const domScrapeSort = (O, classList, options) => {
             let elemList = [];
             const verifiedElems = [];
 
-            // Create array of elems that match class name
-            if (options.containerElem) {
-                options.searchElemType.forEach((elemType) => {
-                    elemList.push( O(options.containerElem).find(`${elemType}[class*="${className}"]`).toArray() );
-                });
-                elemList = elemList.flat();
-            } else {
-                options.searchElemType.forEach((elemType) => {
-                    elemList.push( O(`${elemType}[class*="${className}"]`).toArray() );
-                });
-                elemList = elemList.flat();
-            }
+            // Create array of elems that match class name OR child of matched class name with correct elem type
+            options.searchElemType.forEach((elemType) => {
+                elemList.push( findElemType(O, elemType, className, options) );
+            });
+            elemList = elemList.flat();
 
             if(options.debug) consoleGroup(className, 'Elemlist', elemList);
 
@@ -207,7 +200,7 @@ const isRequired = () => {
 const conditionCheck = (O, elem, conditionName) => {
     switch (conditionName) {
         case 'container':
-            return O(elem).is('[class*="container"]');
+            return O(elem).is('[class*="container"]') || O(elem).children().length >= 3;
         case 'title':
             return O(elem).children().length <= 2 && O(elem).prop('nodeName').toLowerCase().startsWith('h');
         case 'list':
@@ -289,6 +282,52 @@ const parseLists = (O, listElem) => {
         return listArr;
     } else {
         throw new Error('Unable to parse list object');
+    }
+};
+
+// Find and return correctly matched elements based on class name AND/OR elem type, and sort if necessary
+const findElemType = (O, elemType, className, options) => {
+    let matchedElems;
+
+    switch (options.conditionName) {
+        case 'container':
+        case 'list':
+            if (options.containerElem) {
+                matchedElems = O(options.containerElem).find(`${elemType}[class*="${className}"]`).toArray();
+            } else {
+                matchedElems = O(`${elemType}[class*="${className}"]`).toArray();
+            }
+
+            if (!matchedElems.length) {
+                let matchedChildElems = [],
+                    parentElems = [];
+
+                if (options.containerElem) {
+                    parentElems = O(options.containerElem).find(`[class*="${className}"]`).toArray();
+                } else {
+                    parentElems = O(`[class*="${className}"]`).toArray();
+                }
+
+                parentElems.forEach( parent => {
+                    matchedChildElems.push( O(parent).find(`${elemType}`).toArray() );
+                });
+
+                if (matchedChildElems.length) {
+                    matchedElems = elemSort(O, matchedChildElems, options.listCheck);
+                }
+            }
+
+            return matchedElems;
+        case 'title':
+            matchedElems = O(options.containerElem).find(`${elemType}[class*="${className}"]`).toArray();
+
+            if (!matchedElems.length) {
+                matchedElems = O(options.containerElem).find(`${elemType}`).toArray();
+            }
+
+            return matchedElems;
+        default:
+            throw new Error('Could not find viable elems for first check.');
     }
 };
 

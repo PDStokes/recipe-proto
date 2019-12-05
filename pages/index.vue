@@ -9,6 +9,7 @@
                     type="text"
                     name="text"
                     class="inputField"
+                    :class="{ 'loadingBar': loading }"
                     placeholder="Input URL"
                     @focus="warning = false"
                 >
@@ -53,32 +54,34 @@ export default {
     },
     methods: {
         urlCheck(url) {
-            if (url === null || url === '') {
-                this.warning = 'Please enter a valid URL';
-                return false;
-            } else {
+            if (url.startsWith('http') || url.startsWith('www')) {
                 this.warning = false;
                 return true;
+            } else {
+                this.warning = 'Please enter a valid URL';
+                return false;
             }
         },
         async crawlSite() {
             if (this.urlCheck(this.searchParam)) {
                 this.loading = true;
                 const queryUrl = this.searchParam.toString().includes('http') ? this.searchParam : 'http://' + this.searchParam;
-
                 try {
                     const response = await this.$axios.$put('/recipe', { queryUrl });
+
                     if (response) {
                         const recipeContent = this.$parseHtml(response);
                         this.$store.commit('setCurrentRecipe', recipeContent);
                     }
-
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
                 } catch (error) {
-                    console.error("Error: " + error);
+                    console.error(error);
                     this.warning = 'URL Failed: Please try again, or contact ya BOI.';
+                    this.loading = false;
                 }
             }
-            this.loading = false;
         },
     },
 };
@@ -114,7 +117,7 @@ export default {
     width: 90%;
     max-width: 600px;
     padding: 10px;
-    background-color: lightgray;
+    background-color: lightgray !important;
     outline: 0;
     border: 1px solid gray;
     font-size: 1.5rem;
