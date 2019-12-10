@@ -3,14 +3,11 @@
         <div class="saved-nav-wrapper">
             <div v-for="item in content" :key="item.title" class="save-item" @click="focusRecipe(item)">
                 <span v-if="item.saved" class="saved-icon"><i class="fas fa-check" /></span>
-                <span class="close-icon" @click="removeRecipe(item)"><i class="fas fa-times-circle" /></span>
+                <span class="close-icon" @click="removeRecipe(item)"><i class="far fa-times-circle" /></span>
                 <p>{{ item.title }}</p>
             </div>
         </div>
         <div class="button-wrapper">
-            <div class="storage-button save" @click="saveLocalStorage">
-                Save for next time
-            </div>
             <div class="storage-button close" @click="clearLocalStorage">
                 Clear all for good
             </div>
@@ -32,9 +29,6 @@ export default {
         },
         focusRecipe(recipe) {
             this.$store.commit('focusRecipe', recipe);
-        },
-        saveLocalStorage() {
-            this.$store.dispatch('saveCurrentRecipes');
         },
         clearLocalStorage() {
             this.$store.dispatch('clearCurrentRecipes');
@@ -60,6 +54,7 @@ export default {
     border-bottom: 1px solid var(--gray-border);
     position: relative;
     cursor: pointer;
+    transition: all 0.25s;
 
     &:last-child {
         border-bottom: none;
@@ -67,18 +62,24 @@ export default {
 
     &:hover{
         background-color:rgba(0,0,0,0.05);
+        .close-icon {
+            opacity: 1;
+        }
     }
 }
 
 .close-icon{
+    opacity: 0;
     position: absolute;
+    color: darken(red, 25%);
     top: 50%;
     transform: translateY(-50%);
     right: 10px;
     font-size: 1.5rem;
+    transition: opacity 0.25s;
 
     &:hover {
-        color: darken(red, 15%);
+        color: darken(red, 10%);
     }
 }
 

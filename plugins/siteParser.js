@@ -181,6 +181,94 @@ const domScrapeSort = (O, classList, options) => {
 
 };
 
+// ----------- Main Funcs ----------------
+
+// Find and return correctly matched elements based on class name AND/OR elem type, and sort if necessary
+const findElemType = (O, elemType, className, options) => {
+    let matchedElems;
+
+    switch (options.conditionName) {
+        case 'container':
+        case 'list':
+            /* Find elems by container (if exists) && elem type + class name
+            ------------------------------
+                <Container Elem>
+                    <ElemType className>
+            ------------------------------
+            */
+            if (options.containerElem) {
+                matchedElems = O(options.containerElem).find(`${elemType}[class*="${className}"]`).toArray();
+            } else {
+                matchedElems = O(`${elemType}[class*="${className}"]`).toArray();
+            }
+
+            /* If above fails, find parents by class name then match children by elem type
+            ------------------------------
+                <Container Elem>
+                    <className>
+                        <ElemType>
+            ------------------------------
+            */
+            if (!matchedElems.length) {
+                let matchedChildElems = [],
+                    parentElems = [];
+
+                if (options.containerElem) {
+                    parentElems = O(options.containerElem).find(`[class*="${className}"]`).toArray();
+                } else {
+                    parentElems = O(`[class*="${className}"]`).toArray();
+                }
+
+                parentElems.forEach( parent => {
+                    matchedChildElems.push( O(parent).find(`${elemType}`).toArray() );
+                });
+
+                if (matchedChildElems.length) {
+                    matchedElems = elemSort(O, matchedChildElems, options.listCheck);
+                }
+            }
+
+            return matchedElems;
+        case 'title':
+            // Title always has container elem, so check <ElemType className>, and then just <ElemType> if nothing found
+            matchedElems = O(options.containerElem).find(`${elemType}[class*="${className}"]`).toArray();
+
+            if (!matchedElems.length) {
+                matchedElems = O(options.containerElem).find(`${elemType}`).toArray();
+            }
+
+            return matchedElems;
+        default:
+            throw new Error('Could not find viable elems for first check.');
+    }
+};
+
+// Return array of strings from passed list elem
+const parseLists = (O, listElem) => {
+    const listArr = [];
+    const multiPart = O(listElem).length;
+
+    O(listElem).each(function(i, elem) {
+        const elemType = O(elem).prev().length ? O(elem).prev().prop('nodeName').toLowerCase() : null;
+        const headerTypes = ['h1', 'h2', 'h3', 'h4', 'h5'];
+
+        if ( multiPart && headerTypes.includes(elemType) ) {
+            listArr.push( { header: true, text: O(elem).prev().text() } );
+        }
+
+        O(elem).find('li').each(function(i, elem) {
+            listArr.push( { header: false, text: O(elem).text() });
+        });
+
+    });
+
+    if (listArr.length) {
+        return listArr;
+    } else {
+        throw new Error('Unable to parse list object');
+    }
+};
+
 // ----------- Tool Funcs ----------------
 
 // Uses Cheerio obj to check if elem is in loaded data or inside parent elem
@@ -204,7 +292,7 @@ const conditionCheck = (O, elem, conditionName) => {
         case 'title':
             return O(elem).children().length <= 2 && O(elem).prop('nodeName').toLowerCase().startsWith('h');
         case 'list':
-            return O(elem).children().length >= 1;
+            return O(elem).children().length >= 2;
         default:
             throw new Error('Incorrect condition check name');
     }
@@ -257,78 +345,6 @@ const leastFirstSort = (a, b) => {
         return -1;
     }
     return 0;
-};
-
-// Return array of strings from passed list elem
-const parseLists = (O, listElem) => {
-    const listArr = [];
-    const multiPart = O(listElem).length;
-
-    O(listElem).each(function(i, elem) {
-        const elemType = O(elem).prev().length ? O(elem).prev().prop('nodeName').toLowerCase() : null;
-        const headerTypes = ['h1', 'h2', 'h3', 'h4', 'h5'];
-
-        if ( multiPart && headerTypes.includes(elemType) ) {
-            listArr.push( { header: true, text: O(elem).prev().text() } );
-        }
-
-        O(elem).find('li').each(function(i, elem) {
-            listArr.push( { header: false, text: O(elem).text() });
-        });
-
-    });
-
-    if (listArr.length) {
-        return listArr;
-    } else {
-        throw new Error('Unable to parse list object');
-    }
-};
-
-// Find and return correctly matched elements based on class name AND/OR elem type, and sort if necessary
-const findElemType = (O, elemType, className, options) => {
-    let matchedElems;
-
-    switch (options.conditionName) {
-        case 'container':
-        case 'list':
-            if (options.containerElem) {
-                matchedElems = O(options.containerElem).find(`${elemType}[class*="${className}"]`).toArray();
-            } else {
-                matchedElems = O(`${elemType}[class*="${className}"]`).toArray();
-            }
-
-            if (!matchedElems.length) {
-                let matchedChildElems = [],
-                    parentElems = [];
-
-                if (options.containerElem) {
-                    parentElems = O(options.containerElem).find(`[class*="${className}"]`).toArray();
-                } else {
-                    parentElems = O(`[class*="${className}"]`).toArray();
-                }
-
-                parentElems.forEach( parent => {
-                    matchedChildElems.push( O(parent).find(`${elemType}`).toArray() );
-                });
-
-                if (matchedChildElems.length) {
-                    matchedElems = elemSort(O, matchedChildElems, options.listCheck);
-                }
-            }
-
-            return matchedElems;
-        case 'title':
-            matchedElems = O(options.containerElem).find(`${elemType}[class*="${className}"]`).toArray();
-
-            if (!matchedElems.length) {
-                matchedElems = O(options.containerElem).find(`${elemType}`).toArray();
-            }
-
-            return matchedElems;
-        default:
-            throw new Error('Could not find viable elems for first check.');
-    }
 };
 
 // ----------- Debug Funcs ----------------

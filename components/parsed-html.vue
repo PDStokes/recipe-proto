@@ -38,6 +38,7 @@ export default {
     methods: {
         saveRecipe() {
             this.$store.commit('addRecipe', this.content);
+            this.$store.dispatch('saveCurrentRecipes');
         },
     },
 };
@@ -113,15 +114,16 @@ ul, ol {
 .button-save {
     position: absolute;
     top: 30px;
-    right: 0;
+    left: 0;
     padding: 5px 15px;
-    border: 1px solid black;
+    border: 1px solid yellowgreen;
     border-radius: 5px;
     cursor: pointer;
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(0,0,0,0);
+    color: yellowgreen;
 
     &:hover{
-        background-color: rgba(0, 0, 0, 0.1);
+        background-color: lighten(yellowgreen, 40%);
     }
 }
 </style>
