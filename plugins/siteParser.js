@@ -51,7 +51,7 @@ const getTitle = (O, containerElem) => {
     const titleClassSheet = ['title','name'];
 
     const title = domScrapeSort(O, titleClassSheet, {
-        searchElemType: ['h1', 'h2', 'h3'],
+        searchElemType: ['h1', 'h2', 'h3', 'div'],
         containerElem,
         conditionName: 'title',
     });
@@ -125,7 +125,7 @@ const domScrapeSort = (O, classList, options) => {
     // Check if element exists in loaded data or container obj
     classList.filter( elem => elementExists(O, elem, options.containerElem));
 
-    if (classList) {
+    if (classList.length) {
         const bestMatchedElems = [];
 
         // For each class name supplied in classList
@@ -151,19 +151,19 @@ const domScrapeSort = (O, classList, options) => {
 
             if(options.debug) consoleGroup(className, 'Verified Elems', verifiedElems);
 
-            // Sort all verified elems based on passed sort type (listCheck), and push best elem from top
-            if (verifiedElems) {
+            // If verifiedElems recieved items, Sort all verified elems based on passed sort type (listCheck), and push best elem from top
+            if (verifiedElems.length) {
                 const sortedElems = elemSort(O, verifiedElems, options.listCheck);
                 const topElemClass = O(sortedElems[0]).attr('class');
 
                 // If multiple elements with same class name exist, push them all, otherwise push first/best
                 if ( O(`.${topElemClass}`).length > 1 ) {
-                    bestMatchedElems.push( O(`.${topElemClass}`) );
+                    bestMatchedElems.push( O(`.${topElemClass}`).toArray() );
                 } else {
                     bestMatchedElems.push(sortedElems[0]);
                 }
 
-            } else {
+            } else if (options.debug) {
                 console.error(`No verified elems found for ${className}`);
             }
 
@@ -172,7 +172,7 @@ const domScrapeSort = (O, classList, options) => {
         if(options.debug) consoleGroup('END', 'Best Matched Elems:', bestMatchedElems);
 
         // Sort of final best elems from each class name
-        const finalElem = elemSort(O, bestMatchedElems, options.listCheck)[0];
+        const finalElem = elemSort(O, bestMatchedElems.flat(), options.listCheck)[0];
         return finalElem;
 
     } else {
@@ -233,7 +233,7 @@ const findElemType = (O, elemType, className, options) => {
             // Title always has container elem, so check <ElemType className>, and then just <ElemType> if nothing found
             matchedElems = O(options.containerElem).find(`${elemType}[class*="${className}"]`).toArray();
 
-            if (!matchedElems.length) {
+            if (!matchedElems.length && elemType.startsWith('h')) {
                 matchedElems = O(options.containerElem).find(`${elemType}`).toArray();
             }
 
@@ -290,7 +290,7 @@ const conditionCheck = (O, elem, conditionName) => {
         case 'container':
             return O(elem).is('[class*="container"]') || O(elem).children().length >= 3;
         case 'title':
-            return O(elem).children().length <= 2 && O(elem).prop('nodeName').toLowerCase().startsWith('h');
+            return O(elem).children().length <= 2;
         case 'list':
             return O(elem).children().length >= 2;
         default:
