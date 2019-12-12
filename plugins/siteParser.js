@@ -6,21 +6,35 @@ import cheerio from 'cheerio';
  * @param String data - String of html page passed from GET response
  * @return Object - recipe data object
  */
-const mainFunc = (data) => {
-    const cheerioObj = cheerio.load(data);
 
-    try {
-        const recipeContainer = getContainer(cheerioObj);
-        const recipe = {
-            title: getTitle(cheerioObj, recipeContainer),
-            ingredients: getIngredients(cheerioObj, recipeContainer),
-            directions: getDirections(cheerioObj, recipeContainer),
-        };
-        return recipe;
-    } catch (error) {
-        throw error;
+function mainFunc () {
+    let cheerioObj;
+
+    function loadData(data) {
+        cheerioObj = cheerio.load(data);
+        return parseHtml();
     }
-};
+
+    function parseHtml() {
+        try {
+            const recipeContainer = getContainer(cheerioObj);
+            const recipe = {
+                title: getTitle(cheerioObj, recipeContainer),
+                ingredients: getIngredients(cheerioObj, recipeContainer),
+                directions: getDirections(cheerioObj, recipeContainer),
+            };
+            return recipe;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    const api = {
+        parse: loadData,
+    };
+
+    return api;
+}
 
 /** -----------------------------------
  * @desc Func to determine best recipe container element and return it
@@ -359,4 +373,4 @@ const consoleGroup = (className, name, data) => {
 
 // ---------------------------------------
 
-Vue.prototype.$parseHtml = mainFunc;
+Vue.prototype.$parseHtml = mainFunc();

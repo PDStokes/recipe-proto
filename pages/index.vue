@@ -70,7 +70,7 @@ export default {
                     const response = await this.$axios.$put('/recipe', { queryUrl });
 
                     if (response) {
-                        const recipeContent = this.$parseHtml(response);
+                        const recipeContent = this.$parseHtml.parse(response);
                         this.$store.commit('setCurrentRecipe', recipeContent);
                     }
                     setTimeout(() => {
