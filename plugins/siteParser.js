@@ -103,13 +103,14 @@ const getIngredients = (O, containerElem) => {
  */
 const getDirections = (O, containerElem) => {
 
-    const directionsClassSheet = ['direction', 'instruction'];
+    const directionsClassSheet = ['direction', 'instruction', 'method'];
 
     const directions = domScrapeSort(O, directionsClassSheet, {
-        searchElemType: ['ul', 'ol'],
+        searchElemType: ['ol', 'ul', 'div'],
         containerElem,
         conditionName: 'list',
         listCheck: true,
+        debug: true,
     });
 
     const directionArr = parseLists(O, directions);
@@ -199,7 +200,8 @@ const domScrapeSort = (O, classList, options) => {
 
 // Find and return correctly matched elements based on class name AND/OR elem type, and sort if necessary
 const findElemType = (O, elemType, className, options) => {
-    let matchedElems;
+    let matchedElems = [],
+        matchedChildElems = [];
 
     switch (options.conditionName) {
         case 'container':
@@ -224,8 +226,7 @@ const findElemType = (O, elemType, className, options) => {
             ------------------------------
             */
             if (!matchedElems.length) {
-                let matchedChildElems = [],
-                    parentElems = [];
+                let parentElems = [];
 
                 if (options.containerElem) {
                     parentElems = O(options.containerElem).find(`[class*="${className}"]`).toArray();
@@ -234,11 +235,34 @@ const findElemType = (O, elemType, className, options) => {
                 }
 
                 parentElems.forEach( parent => {
-                    matchedChildElems.push( O(parent).find(`${elemType}`).toArray() );
+                    const matchedElemType = O(parent).find(`${elemType}`).toArray();
+
+                    if (matchedElemType.length) {
+                        matchedChildElems.push( matchedElemType.flat() );
+                    }
                 });
 
                 if (matchedChildElems.length) {
                     matchedElems = elemSort(O, matchedChildElems, options.listCheck);
+                }
+            }
+
+            /* If above fails, match all elem type inside container
+            ------------------------------
+                <Container Elem>
+                    <ElemType>
+            ------------------------------
+            */
+            if (!matchedElems.length && !matchedChildElems.length) {
+                let allElemTypes = [];
+                if (options.containerElem) {
+                    allElemTypes = O(options.containerElem).find(`${elemType}`).toArray();
+                } else {
+                    allElemTypes = O(`${elemType}`).toArray();
+                }
+
+                if (allElemTypes.length) {
+                    matchedElems = elemSort(O, allElemTypes, options.listCheck);
                 }
             }
 
