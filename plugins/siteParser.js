@@ -110,7 +110,6 @@ const getDirections = (O, containerElem) => {
         containerElem,
         conditionName: 'list',
         listCheck: true,
-        debug: true,
     });
 
     const directionArr = parseLists(O, directions);
@@ -253,18 +252,18 @@ const findElemType = (O, elemType, className, options) => {
                     <ElemType>
             ------------------------------
             */
-            if (!matchedElems.length && !matchedChildElems.length) {
-                let allElemTypes = [];
-                if (options.containerElem) {
-                    allElemTypes = O(options.containerElem).find(`${elemType}`).toArray();
-                } else {
-                    allElemTypes = O(`${elemType}`).toArray();
-                }
+            // if (!matchedElems.length && !matchedChildElems.length) {
+            //     let allElemTypes = [];
+            //     if (options.containerElem) {
+            //         allElemTypes = O(options.containerElem).find(`${elemType}`).toArray();
+            //     } else {
+            //         allElemTypes = O(`${elemType}`).toArray();
+            //     }
 
-                if (allElemTypes.length) {
-                    matchedElems = elemSort(O, allElemTypes, options.listCheck);
-                }
-            }
+            //     if (allElemTypes.length) {
+            //         matchedElems = elemSort(O, allElemTypes, options.listCheck);
+            //     }
+            // }
 
             return matchedElems;
         case 'title':
@@ -398,3 +397,4 @@ const consoleGroup = (className, name, data) => {
 // ---------------------------------------
 
 Vue.prototype.$parseHtml = mainFunc();
+export default mainFunc();

@@ -2,7 +2,7 @@
     <div class="container">
         <div class="header">
             <h1 class="title">Reci<span>peel</span></h1>
-            <form ref="searchForm" @submit.prevent="crawlSite">
+            <form id="searchForm" ref="searchForm" @submit.prevent="crawlSite">
                 <input
                     v-model="searchParam"
                     :disabled="loading"
