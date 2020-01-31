@@ -70,7 +70,7 @@ const getTitle = (O, containerElem) => {
         conditionName: 'title',
     });
 
-    return O(title).text();
+    return O(title[0]).text();
 };
 
 /** -----------------------------------
@@ -106,7 +106,7 @@ const getDirections = (O, containerElem) => {
     const directionsClassSheet = ['direction', 'instruction', 'method'];
 
     const directions = domScrapeSort(O, directionsClassSheet, {
-        searchElemType: ['ol', 'ul', 'div'],
+        searchElemType: ['ol', 'ul'],
         containerElem,
         conditionName: 'list',
         listCheck: true,
@@ -186,7 +186,7 @@ const domScrapeSort = (O, classList, options) => {
         if(options.debug) consoleGroup('END', 'Best Matched Elems:', bestMatchedElems);
 
         // Sort of final best elems from each class name
-        const finalElem = elemSort(O, bestMatchedElems.flat(), options.listCheck)[0];
+        const finalElem = elemSort(O, bestMatchedElems.flat(), options.listCheck, true);
         return finalElem;
 
     } else {
@@ -212,9 +212,11 @@ const findElemType = (O, elemType, className, options) => {
             ------------------------------
             */
             if (options.containerElem) {
-                matchedElems = O(options.containerElem).find(`${elemType}[class*="${className}"]`).toArray();
+                matchedElems = O(options.containerElem).find(`${elemType}[class*="${className}" i]`).toArray();
+                matchedElems = setPriority(matchedElems, 1);
             } else {
-                matchedElems = O(`${elemType}[class*="${className}"]`).toArray();
+                matchedElems = O(`${elemType}[class*="${className}" i]`).toArray();
+                matchedElems = setPriority(matchedElems, 1);
             }
 
             /* If above fails, find parents by class name then match children by elem type
@@ -228,9 +230,9 @@ const findElemType = (O, elemType, className, options) => {
                 let parentElems = [];
 
                 if (options.containerElem) {
-                    parentElems = O(options.containerElem).find(`[class*="${className}"]`).toArray();
+                    parentElems = O(options.containerElem).find(`[class*="${className}" i]`).toArray();
                 } else {
-                    parentElems = O(`[class*="${className}"]`).toArray();
+                    parentElems = O(`[class*="${className}" i]`).toArray();
                 }
 
                 parentElems.forEach( parent => {
@@ -243,6 +245,7 @@ const findElemType = (O, elemType, className, options) => {
 
                 if (matchedChildElems.length) {
                     matchedElems = elemSort(O, matchedChildElems, options.listCheck);
+                    matchedElems = setPriority(matchedElems, 2);
                 }
             }
 
@@ -268,7 +271,7 @@ const findElemType = (O, elemType, className, options) => {
             return matchedElems;
         case 'title':
             // Title always has container elem, so check <ElemType className>, and then just <ElemType> if nothing found
-            matchedElems = O(options.containerElem).find(`${elemType}[class*="${className}"]`).toArray();
+            matchedElems = O(options.containerElem).find(`${elemType}[class*="${className}" i]`).toArray();
 
             if (!matchedElems.length && elemType.startsWith('h')) {
                 matchedElems = O(options.containerElem).find(`${elemType}`).toArray();
@@ -281,9 +284,11 @@ const findElemType = (O, elemType, className, options) => {
 };
 
 // Return array of strings from passed list elem
-const parseLists = (O, listElem) => {
+const parseLists = (O, listElem, debug = false) => {
     const listArr = [];
     const multiPart = O(listElem).length;
+
+    if(debug) consoleGroup('PARSE', 'List ELEM', listElem);
 
     O(listElem).each(function(i, elem) {
         const elemType = O(elem).prev().length ? O(elem).prev().prop('nodeName').toLowerCase() : null;
@@ -337,8 +342,16 @@ const conditionCheck = (O, elem, conditionName) => {
 
 
 // Sort based on param type
-const elemSort = (O, elems, listCheck = false) => {
+const elemSort = (O, elems, listCheck = false, prioritized = false) => {
     const sortType = listCheck ? listElemCheck : childrenCheck;
+    if (prioritized) {
+        elems = elems.sort( (a, b) => {
+            const aPriority = a.priority;
+            const bPriority = b.priority;
+
+            return leastFirstSort(aPriority, bPriority);
+        });
+    }
     const orderedArr = elems.sort( (a, b) => {
         const aCount = sortType(O, a);
         const bCount = sortType(O, b);
@@ -359,7 +372,7 @@ const listElemCheck = (O, elem) => {
     return (count === null ? 0 : count);
 };
 
-// Return number of times string matches with '<li'
+// Return number of children
 const childrenCheck = (O, elem) => {
     return O(elem).children();
 };
@@ -382,6 +395,16 @@ const leastFirstSort = (a, b) => {
         return -1;
     }
     return 0;
+};
+
+// Add priority property for better sorting
+const setPriority = (elemList, priorityNum) => {
+    if (elemList.length) {
+        elemList.forEach((elem) => {
+            elem.priority = priorityNum;
+        });
+    }
+    return elemList;
 };
 
 // ----------- Debug Funcs ----------------
